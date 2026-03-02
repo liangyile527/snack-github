@@ -1,0 +1,39 @@
+name: Generate GitHub Snake
+
+# 触发条件：每天运行一次，也可以手动触发
+on:
+  schedule:
+    # 每天 UTC 时间 0 点运行
+    - cron: "0 0 * * *"
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  generate-snake:
+    runs-on: ubuntu-latest
+    steps:
+      # 第一步：检出仓库代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 第二步：生成蛇形图
+      - name: Generate snake animation
+        uses: Platane/snk@v3
+        with:
+          # 读取当前仓库所有者的贡献数据
+          github_user_name: ${{ github.repository_owner }}
+          # 生成的文件及自定义配置
+          outputs: |
+            dist/github-snake.svg
+            dist/github-snake-dark.svg?palette=github-dark
+            dist/ocean.gif?color_snake=orange&color_dots=#bfd6f6,#8dbdff,#64a1f4,#4b91f1,#3c7dd9&color_background=#aaaaaa
+
+      # 第三步：将生成的文件提交并推送到仓库
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # 提交的文件路径
+          file_pattern: dist/*
+          # 提交信息
+          commit_message: "Update GitHub snake animation"
+          # 分支名称
+          branch: main  # 如果你的默认分支是 master，请改为 master$(date +%s)
